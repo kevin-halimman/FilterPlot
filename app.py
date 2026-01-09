@@ -9,10 +9,19 @@ import numpy as np
 root = tk.Tk()
 root.title("Filter Transfer Function Visualization")
 root.geometry("1200x700")
+# Prepare root grid with two columns for later layouts
+root.columnconfigure(0, weight=1)
+root.columnconfigure(1, weight=1)
+root.rowconfigure(0, weight=1)
+# Add a bottom spacer row so buttons can be centered vertically
+root.rowconfigure(2, weight=1)
+# Style for larger, centered buttons
+style = ttk.Style(root)
+style.configure('Large.TButton', font=('TkDefaultFont', 12), padding=6)
 canvas = None
 j = 1j
 RC_invert = False
-
+RLC = True
 
 def clear_frame():
     for widget in root.winfo_children():
@@ -23,28 +32,57 @@ def toggle_RC_invert():
     RC_invert = not RC_invert
     #RC_Circuit()
 
+def main_menu():
+    clear_frame()
+    root.columnconfigure(0, weight=1)
+    root.columnconfigure(1, weight=1)
+    root.rowconfigure(0, weight=1)
+    
+    root.rowconfigure(2, weight=1) #Spacer
+
+    ttk.Button(root, text="RC Circuit", command=RC_Circuit, style='Large.TButton', width=20).grid(row=1, column=0, columnspan=2, pady=10)
+    ttk.Button(root, text="LC Circuit (Coming Soon)", command=lambda: None, style='Large.TButton', width=20).grid(row=2, column=0, columnspan=2, pady=10)
+
 def RC_Circuit():
     clear_frame()
-    global RC_invert
+    global RC_invert, left_frame, right_frame, fc_var
 
-    resistance_input = tk.Label(root, text="Enter Resistance (R) in Ohms:")
+    root.columnconfigure(0, weight=1)
+    root.columnconfigure(1, weight=1)
+    root.rowconfigure(0, weight=1)
+    
+    root.rowconfigure(2, weight=1) #Spacer
+
+    left_frame = tk.Frame(root)
+    left_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+
+    right_frame = tk.Frame(root)
+    right_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+
+    # Controls on the left
+    resistance_input = tk.Label(left_frame, text="Enter Resistance (R) in Ohms:")
     resistance_input.pack(pady=5)
-    entry1 = tk.Entry(root)
+    entry1 = tk.Entry(left_frame)
     entry1.pack(pady=5)
-    capacitance_input = tk.Label(root, text="Enter Capacitance (C) in Farads:")
+    capacitance_input = tk.Label(left_frame, text="Enter Capacitance (C) in Farads:")
     capacitance_input.pack(pady=5)
-    entry2 = tk.Entry(root)
+    entry2 = tk.Entry(left_frame)
     entry2.pack(pady=5)
-    ttk.Button(root, text="Plot RC Circuit", command=lambda: plot_RC(entry1, entry2)).pack(pady=20)
-    label_info = tk.Label(root, text="Switch from RC -> CR and vice versa:").pack(pady=5)
-    ttk.Button(root, text="Toggle Invert/Non-Invert", command=lambda: toggle_RC_invert()).pack(pady=5)
+    ttk.Button(left_frame, text="Plot RC Circuit", command=lambda: plot_RC(entry1, entry2)).pack(pady=20)
+    label_info = tk.Label(left_frame, text="Switch from RC -> CR and vice versa:").pack(pady=5)
+    ttk.Button(left_frame, text="Toggle Invert/Non-Invert", command=lambda: toggle_RC_invert()).pack(pady=5)
+    ttk.Button(left_frame, text="Back to Main Menu", command=lambda: main_menu()).pack(pady=20)
+
+    # Info on the right
+    fc_var = tk.StringVar(value="Cutoff Frequency: __ Hz")
+    tk.Label(right_frame, textvariable=fc_var, font=("TkDefaultFont", 12)).pack(pady=5) 
 
 def plot_RC(entry1, entry2):
     if not entry1.get() or not entry2.get():
         return
     
     global canvas
-    global RC_invert
+    global RC_invert, right_frame, fc_var
     R = float(entry1.get())
     C = float(entry2.get())
 
@@ -78,10 +116,11 @@ def plot_RC(entry1, entry2):
     ax2.axvline(fc, color='red', linestyle='--', label='Cutoff Frequency')
     ax2.legend()
 
-    canvas = FigureCanvasTkAgg(fig, master=root)
+    fc_var.set(f"Cutoff Frequency: {fc:.2f} Hz")
+    canvas = FigureCanvasTkAgg(fig, master=right_frame)
     canvas.draw()
-    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True) 
 
-ttk.Button(root, text = "RC Circuit", command = RC_Circuit).pack()
-ttk.Button(root, text = "Exit", command = root.destroy).pack(pady=10)
+ttk.Button(root, text="RC Circuit", command=RC_Circuit, style='Large.TButton', width=20).grid(row=1, column=0, columnspan=2, pady=10)
+ttk.Button(root, text="LC Circuit (Coming Soon)", command=lambda: None, style='Large.TButton', width=20).grid(row=2, column=0, columnspan=2, pady=10)
 root.mainloop()
