@@ -21,18 +21,24 @@ canvas = None
 j = 1j
 RC_invert = False
 LR_invert = False
+rc_status_label = None
+lr_status_label = None
 
 def clear_frame():
     for widget in root.winfo_children():
         widget.destroy()
 
 def toggle_RC_invert():
-    global RC_invert
+    global RC_invert, rc_status_label
     RC_invert = not RC_invert
+    if rc_status_label is not None:
+        rc_status_label.config(text="On" if RC_invert else "Off", fg="green" if RC_invert else "red")
 
 def toggle_LR_invert():
-    global LR_invert
+    global LR_invert, lr_status_label
     LR_invert = not LR_invert
+    if lr_status_label is not None:
+        lr_status_label.config(text="On" if LR_invert else "Off", fg="green" if LR_invert else "red")
 
 def main_menu():
     clear_frame()
@@ -47,7 +53,7 @@ def main_menu():
 
 def RC_Circuit():
     clear_frame()
-    global RC_invert, left_frame, right_frame, fc_var
+    global RC_invert, left_frame, right_frame, fc_var, rc_status_label
 
     root.columnconfigure(0, weight=1)
     root.columnconfigure(1, weight=1)
@@ -72,7 +78,11 @@ def RC_Circuit():
     entry2.pack(pady=5)
     ttk.Button(left_frame, text="Plot RC Circuit", command=lambda: plot_RC(entry1, entry2)).pack(pady=20)
     label_info = tk.Label(left_frame, text="Switch from RC -> CR and vice versa:").pack(pady=5)
-    ttk.Button(left_frame, text="Toggle Invert/Non-Invert", command=lambda: toggle_RC_invert()).pack(pady=5)
+    toggle_frame = tk.Frame(left_frame)
+    toggle_frame.pack(pady=5)
+    ttk.Button(toggle_frame, text="Toggle Invert/Non-Invert", command=lambda: toggle_RC_invert()).pack(side='left', padx=(0,10))
+    rc_status_label = tk.Label(toggle_frame, text=("On" if RC_invert else "Off"), fg=("green" if RC_invert else "red"))
+    rc_status_label.pack(side='left')
     ttk.Button(left_frame, text="Back to Main Menu", command=lambda: main_menu()).pack(pady=20)
 
     # Info on the right
@@ -126,7 +136,7 @@ def plot_RC(entry1, entry2):
 def LR_Circuit():
     clear_frame()
     
-    global RC_invert, left_frame, right_frame, fc_var
+    global LR_invert, left_frame, right_frame, fc_var, lr_status_label
 
     root.columnconfigure(0, weight=1)
     root.columnconfigure(1, weight=1)
@@ -151,7 +161,11 @@ def LR_Circuit():
     entry2.pack(pady=5)
     ttk.Button(left_frame, text="Plot LR Circuit", command=lambda: plot_LR(entry1, entry2)).pack(pady=20)
     label_info = tk.Label(left_frame, text="Switch from LR -> RL and vice versa:").pack(pady=5)
-    ttk.Button(left_frame, text="Toggle Invert/Non-Invert", command=lambda: toggle_LR_invert()).pack(pady=5)
+    toggle_frame = tk.Frame(left_frame)
+    toggle_frame.pack(pady=5)
+    ttk.Button(toggle_frame, text="Toggle Invert/Non-Invert", command=lambda: toggle_LR_invert()).pack(side='left', padx=(0,10))
+    lr_status_label = tk.Label(toggle_frame, text=("On" if LR_invert else "Off"), fg=("green" if LR_invert else "red"))
+    lr_status_label.pack(side='left')
     ttk.Button(left_frame, text="Back to Main Menu", command=lambda: main_menu()).pack(pady=20)
 
     # Info on the right
@@ -204,4 +218,5 @@ def plot_LR(entry1, entry2):
 
 ttk.Button(root, text="RC Circuit", command=RC_Circuit, style='Large.TButton', width=20).grid(row=1, column=0, columnspan=2, pady=10)
 ttk.Button(root, text="LR Circuit", command=LR_Circuit, style='Large.TButton', width=20).grid(row=2, column=0, columnspan=2, pady=10)
+#ttk.Button(root, text="")
 root.mainloop()
